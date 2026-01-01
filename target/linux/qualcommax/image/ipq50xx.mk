@@ -226,4 +226,4 @@ define Device/cucc_vs010
 	DEVICE_DTS := ipq5018-vs010
 	DEVICE_PACKAGES := kmod-qca-nss-drv kmod-qca-nss-ecm kmod-qca-wifi-qsdk ath11k-firmware-ipq5018
 endef
-TARGET_DEVICES += CUCC_VS010
+TARGET_DEVICES += cucc_Vvs010
