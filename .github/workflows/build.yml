@@ -17,24 +17,42 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate .config
+- name: Generate .config
         run: |
-          # 选中你刚才在 ipq50xx.mk 中定义的设备
+          # 1. 基础目标机型 (由你定义的 VS010)
           echo "CONFIG_TARGET_qualcommax=y" > .config
           echo "CONFIG_TARGET_qualcommax_ipq50xx=y" >> .config
           echo "CONFIG_TARGET_qualcommax_ipq50xx_DEVICE_cucc_vs010=y" >> .config
           
-          # 选中高性能 NSS 转发组件
+          # 2. NSS 硬件转发加速 (高性能核心)
           echo "CONFIG_PACKAGE_kmod-qca-nss-drv=y" >> .config
           echo "CONFIG_PACKAGE_kmod-qca-nss-ecm=y" >> .config
+          # 建议额外增加 TurboACC，这是目前最直观的管理硬件加速的界面
+          echo "CONFIG_PACKAGE_luci-app-turboacc=y" >> .config
           
-          # 强制包含闭源高性能 WiFi 驱动
+          # 3. 闭源 QSDK WiFi 驱动 (高性能无线)
           echo "CONFIG_PACKAGE_kmod-qca-wifi-qsdk=y" >> .config
+          # 确保包含固件包
+          echo "CONFIG_PACKAGE_ath11k-firmware-ipq5018=y" >> .config
           
-          # 常用管理界面
+          # 4. LuCI 界面与主题
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-theme-argon=y" >> .config
+          echo "CONFIG_PACKAGE_luci-app-ttyd=y" >> .config
           
+          # 5. 新增功能插件 (IPTV与唤醒)
+          echo "CONFIG_PACKAGE_luci-app-udpxy=y" >> .config
+          echo "CONFIG_PACKAGE_luci-app-wol=y" >> .config
+          
+          # 6. 统计与监控插件 (基于 collectd)
+          echo "CONFIG_PACKAGE_luci-app-statistics=y" >> .config
+          echo "CONFIG_PACKAGE_collectd-mod-sensors=y" >> .config
+          echo "CONFIG_PACKAGE_collectd-mod-cpu=y" >> .config
+          echo "CONFIG_PACKAGE_collectd-mod-cpufreq=y" >> .config
+          # 特别建议增加 thermal 模块，用于监控 IPQ5000 芯片温度
+          echo "CONFIG_PACKAGE_collectd-mod-thermal=y" >> .config
+          
+          # 自动补全依赖并应用配置
           make defconfig
 
       - name: Make Download
