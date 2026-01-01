@@ -17,7 +17,7 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-- name: Generate .config
+      - name: Generate .config
         run: |
           # 1. 基础目标机型 (由你定义的 VS010)
           echo "CONFIG_TARGET_qualcommax=y" > .config
@@ -27,12 +27,10 @@ jobs:
           # 2. NSS 硬件转发加速 (高性能核心)
           echo "CONFIG_PACKAGE_kmod-qca-nss-drv=y" >> .config
           echo "CONFIG_PACKAGE_kmod-qca-nss-ecm=y" >> .config
-          # 建议额外增加 TurboACC，这是目前最直观的管理硬件加速的界面
           echo "CONFIG_PACKAGE_luci-app-turboacc=y" >> .config
           
           # 3. 闭源 QSDK WiFi 驱动 (高性能无线)
           echo "CONFIG_PACKAGE_kmod-qca-wifi-qsdk=y" >> .config
-          # 确保包含固件包
           echo "CONFIG_PACKAGE_ath11k-firmware-ipq5018=y" >> .config
           
           # 4. LuCI 界面与主题
@@ -56,12 +54,9 @@ jobs:
           echo "CONFIG_PACKAGE_collectd-mod-load=y" >> .config
           echo "CONFIG_PACKAGE_collectd-mod-network=y" >> .config
 
-          # 内核监控支持 (确保 statistics 能读到数据)
+          # 内核监控支持
           echo "CONFIG_PACKAGE_kmod-hwmon-core=y" >> .config
           echo "CONFIG_PACKAGE_kmod-cpufreq-stats=y" >> .config
-
-          # 界面增强
-          echo "CONFIG_PACKAGE_luci-app-turboacc=y" >> .config
           
           # 自动补全依赖并应用配置
           make defconfig
@@ -73,7 +68,7 @@ jobs:
         run: make -j$(nproc) || make -j1 V=s
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4 # 必须使用 V4 以适配最新的 GitHub 环境
+        uses: actions/upload-artifact@v4
         with:
           name: VS010-ImmortalWrt-Firmware
           path: bin/targets/qualcommax/ipq50xx/*.bin
