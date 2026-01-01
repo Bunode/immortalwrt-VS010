@@ -1,0 +1,50 @@
+name: Build VS010 Firmware
+
+on:
+  workflow_dispatch: # 允许手动点击按钮启动
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04 # 使用稳定的 22.04 环境
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Compilation Environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential flex gawk gettext git libncurses5-dev libssl-dev python3 python3-setuptools swig unzip zlib1g-dev file wget
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Generate .config
+        run: |
+          # 选中你刚才在 ipq50xx.mk 中定义的设备
+          echo "CONFIG_TARGET_qualcommax=y" > .config
+          echo "CONFIG_TARGET_qualcommax_ipq50xx=y" >> .config
+          echo "CONFIG_TARGET_qualcommax_ipq50xx_DEVICE_cucc_vs010=y" >> .config
+          
+          # 选中高性能 NSS 转发组件
+          echo "CONFIG_PACKAGE_kmod-qca-nss-drv=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-qca-nss-ecm=y" >> .config
+          
+          # 强制包含闭源高性能 WiFi 驱动
+          echo "CONFIG_PACKAGE_kmod-qca-wifi-qsdk=y" >> .config
+          
+          # 常用管理界面
+          echo "CONFIG_PACKAGE_luci=y" >> .config
+          echo "CONFIG_PACKAGE_luci-theme-argon=y" >> .config
+          
+          make defconfig
+
+      - name: Make Download
+        run: make download -j8
+
+      - name: Compile Firmware
+        run: make -j$(nproc) || make -j1 V=s
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4 # 必须使用 V4 以适配最新的 GitHub 环境
+        with:
+          name: VS010-ImmortalWrt-Firmware
+          path: bin/targets/qualcommax/ipq50xx/*.bin
