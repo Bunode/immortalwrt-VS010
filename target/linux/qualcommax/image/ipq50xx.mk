@@ -218,3 +218,12 @@ define Device/yuncore_ax850
 		ipq-wifi-yuncore_ax850
 endef
 TARGET_DEVICES += yuncore_ax850
+
+define Device/cucc_vs010
+	$(call Device/FitImage)
+	DEVICE_VENDOR := CUCC
+	DEVICE_MODEL := VS010
+	DEVICE_DTS := ipq5018-vs010
+	DEVICE_PACKAGES := kmod-qca-nss-drv kmod-qca-nss-ecm kmod-qca-wifi-qsdk ath11k-firmware-ipq5018
+endef
+TARGET_DEVICES += CUCC_VS010
