@@ -44,13 +44,24 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-udpxy=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-wol=y" >> .config
           
-          # 6. 统计与监控插件 (基于 collectd)
+          # 统计图表及核心依赖
           echo "CONFIG_PACKAGE_luci-app-statistics=y" >> .config
-          echo "CONFIG_PACKAGE_collectd-mod-sensors=y" >> .config
+          echo "CONFIG_PACKAGE_collectd=y" >> .config
+          echo "CONFIG_PACKAGE_collectd-mod-rrdtool=y" >> .config
           echo "CONFIG_PACKAGE_collectd-mod-cpu=y" >> .config
           echo "CONFIG_PACKAGE_collectd-mod-cpufreq=y" >> .config
-          # 特别建议增加 thermal 模块，用于监控 IPQ5000 芯片温度
+          echo "CONFIG_PACKAGE_collectd-mod-sensors=y" >> .config
           echo "CONFIG_PACKAGE_collectd-mod-thermal=y" >> .config
+          echo "CONFIG_PACKAGE_collectd-mod-interface=y" >> .config
+          echo "CONFIG_PACKAGE_collectd-mod-load=y" >> .config
+          echo "CONFIG_PACKAGE_collectd-mod-network=y" >> .config
+
+          # 内核监控支持 (确保 statistics 能读到数据)
+          echo "CONFIG_PACKAGE_kmod-hwmon-core=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-cpufreq-stats=y" >> .config
+
+          # 界面增强
+          echo "CONFIG_PACKAGE_luci-app-turboacc=y" >> .config
           
           # 自动补全依赖并应用配置
           make defconfig
