@@ -19,46 +19,38 @@ jobs:
 
       - name: Generate .config
         run: |
-          # 1. 基础目标机型 (由你定义的 VS010)
+          # 1. 基础目标机型
           echo "CONFIG_TARGET_qualcommax=y" > .config
           echo "CONFIG_TARGET_qualcommax_ipq50xx=y" >> .config
           echo "CONFIG_TARGET_qualcommax_ipq50xx_DEVICE_cucc_vs010=y" >> .config
-          
-          # 2. NSS 硬件转发加速 (高性能核心)
+
+          # 2. 核心网络驱动 (VS010 联网的关键)
+          echo "CONFIG_PACKAGE_kmod-qca-nss-dp=y" >> .config
           echo "CONFIG_PACKAGE_kmod-qca-nss-drv=y" >> .config
           echo "CONFIG_PACKAGE_kmod-qca-nss-ecm=y" >> .config
-          echo "CONFIG_PACKAGE_luci-app-turboacc=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-qca-nss-ecm-standard=y" >> .config
           
-          # 3. 闭源 QSDK WiFi 驱动 (高性能无线)
+          # 3. 闭源 QSDK WiFi 驱动 (注意：删除之前的 ath11k 开源固件，改用 QSDK 方案)
           echo "CONFIG_PACKAGE_kmod-qca-wifi-qsdk=y" >> .config
-          echo "CONFIG_PACKAGE_ath11k-firmware-ipq5018=y" >> .config
+          echo "CONFIG_PACKAGE_kmod-qca-wifi-qsdk-db=y" >> .config
           
-          # 4. LuCI 界面与主题
+          # 4. LuCI 与 基础 UI
           echo "CONFIG_PACKAGE_luci=y" >> .config
           echo "CONFIG_PACKAGE_luci-theme-argon=y" >> .config
+          echo "CONFIG_PACKAGE_luci-app-turboacc=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-ttyd=y" >> .config
           
-          # 5. 新增功能插件 (IPTV与唤醒)
+          # 5. IPTV 与 工具
           echo "CONFIG_PACKAGE_luci-app-udpxy=y" >> .config
           echo "CONFIG_PACKAGE_luci-app-wol=y" >> .config
-          
-          # 统计图表及核心依赖
+
+          # 6. 统计图表 (建议暂时精简，防止因依赖过多导致编译失败)
           echo "CONFIG_PACKAGE_luci-app-statistics=y" >> .config
-          echo "CONFIG_PACKAGE_collectd=y" >> .config
-          echo "CONFIG_PACKAGE_collectd-mod-rrdtool=y" >> .config
           echo "CONFIG_PACKAGE_collectd-mod-cpu=y" >> .config
-          echo "CONFIG_PACKAGE_collectd-mod-cpufreq=y" >> .config
-          echo "CONFIG_PACKAGE_collectd-mod-sensors=y" >> .config
-          echo "CONFIG_PACKAGE_collectd-mod-thermal=y" >> .config
           echo "CONFIG_PACKAGE_collectd-mod-interface=y" >> .config
           echo "CONFIG_PACKAGE_collectd-mod-load=y" >> .config
-          echo "CONFIG_PACKAGE_collectd-mod-network=y" >> .config
 
-          # 内核监控支持
-          echo "CONFIG_PACKAGE_kmod-hwmon-core=y" >> .config
-          echo "CONFIG_PACKAGE_kmod-cpufreq-stats=y" >> .config
-          
-          # 自动补全依赖并应用配置
+          # 7. 必须执行：强制补全所有缺失的底层依赖
           make defconfig
 
       - name: Make Download
